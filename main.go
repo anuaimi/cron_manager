@@ -11,17 +11,26 @@ import (
 func main() {
 
 	// read parameters
-	port := flag.String("port",os.Getenv("CM_PORT"),"port for API")
-	flag.Parse()
-
-	if len(*port) == 0 {
-		*port = "8080"
+	port := os.Getenv("CM_PORT")
+	if len(port) == 0 {
+		port = "8080"
 	}
+	
+	// get input parameters
+	apiKey := flag.String("api_key", os.Getenv("CM_APIKEY"), "api key to authenticate")
+	apiPort := flag.String("port", port,"port for API")
+	flag.Parse()
 
 	// setup api routes
 	r := gin.Default()
-	r.POST("/job", submit_job)
-	r.Run(":" + *port)
+	authorized := r.Group("/")
+	if len(*apiKey) > 0 {
+		authorized = r.Group("/", gin.BasicAuth(gin.Accounts{"apiKey" : *apiKey}))
+	}
+
+	authorized.POST("/job", submit_job)
+
+	r.Run(":" + *apiPort)
 
 	// only get here if API server stopped (ctrl-C)
 	// time to cleanup
