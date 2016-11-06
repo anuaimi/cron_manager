@@ -23,4 +23,6 @@ func main() {
 	r.POST("/job", submit_job)
 	r.Run(":" + *port)
 
+	// only get here if API server stopped (ctrl-C)
+	// time to cleanup
 }
